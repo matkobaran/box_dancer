@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Box dancer</title>
+
+    <style>
+        body {
+            text-align: center;
+        }
+        canvas {
+            border: 10px solid #ec524b;
+        }
+
+    </style>
+</head>
+<body>
+    <canvas width="800" height="500"></canvas>
+    <script>
+        // listeners
+        document.addEventListener("keydown", keyPush);
+        //document.addEventListener("keyup", keyPull);
+
+        //canvas
+        const canvas = document.querySelector("canvas");
+        const ctx = canvas.getContext("2d");
+        // variables
+        const bgColor = "#f3eac2";
+        const fps = 15;
+        //player variables
+        const pColor = "#9ad3bc";
+        const pWidth = 25;
+        const pHeight = pWidth;
+
+        let playerPosX = canvas.width / 2 - pWidth;
+        let playerPosY = canvas.height / 2;
+        let score = 0;
+
+        let moveActive = 0;
+
+        // GAME
+        function gameLoop() {
+            
+            playerMove(); 
+            
+            draw();
+
+            setTimeout(gameLoop, 1000 / fps);
+
+        }
+
+        // player move
+        function playerMove() {
+            if (moveActive == -1) {
+                playerPosY = playerPosY - 50;
+            }
+            moveActive = 1;
+            playerPosY = playerPosY + 5;           
+            
+        }
+
+        //draw
+        function draw() {
+            rectangle(bgColor, 0, 0, canvas.width, canvas.height);
+            // obstacle move
+            obstacleMove();
+            rectangle(pColor, playerPosX, playerPosY, pWidth, pHeight);
+        }
+
+        //draw rectangle
+        function rectangle(color, x, y, width, height) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        function keyPush(event) {
+            if (event.keyCode == 32) {
+                //alert(event.key);
+                moveActive = -1;
+            }            
+        }
+
+        // move obstacle object 
+        function obstacleMove() {
+            // draw obstacle
+            drawObstacle();
+            // move obstacle 
+            moveObstacle();
+            // hit obstacle
+            hitObstacle();
+        }
+
+        //obstcle variables
+        const obstacleColor = "blue";
+        let barrierStart = canvas.width;
+        const obstWidth = 100;
+        let gateHeight = Math.floor(Math.random() * 100) + 50;
+        let gateX = canvas.width;
+        let gateY = canvas.height - gateHeight - (Math.floor(Math.random() * (canvas.height - gateHeight))); 
+        //draw obstacle
+        function drawObstacle() {
+            barriers = rectangle(obstacleColor, gateX, 0, obstWidth, canvas.height);
+            gate = rectangle(bgColor, gateX, gateY, obstWidth, gateHeight);
+            
+            //console.log(gateHeight);            
+        }
+      
+
+        function moveObstacle() {            
+            //barrierStart -= 5;
+            gateX -= 10;
+
+            if (gateX == 0) {
+                resetObstacle();
+                
+            }
+            //console.log(gateX);            
+        }
+
+        function hitObstacle() {
+            if (((playerPosX + pWidth - 20) == gateX) && (playerPosY < gateY || ((playerPosY + pHeight) > (gateY + gateHeight)))) {
+                console.log(playerPosX);
+                console.log(pWidth);
+                console.log(gateX);
+                alert("Score: " + score);
+                reset();
+            }
+
+            else if (((playerPosX + pWidth - 20) > gateX && gateX + obstWidth > (playerPosX + pWidth)) && (playerPosY < gateY || ((playerPosY + pHeight) > (gateY + gateHeight)))) {
+                console.log(playerPosX);
+                console.log(pWidth);
+                console.log(gateX);
+                alert("Score: " + score);
+                reset();
+            }
+            else if (playerPosY + pHeight - 10 == canvas.height) {
+                alert("Score: " + score);
+                reset();
+            }
+            else if ((gateX + obstWidth) == (playerPosX + pWidth - 20)) {
+                score++;
+            }
+        }
+
+        function resetObstacle() {
+            gateX = canvas.width;
+            gateY = canvas.height - gateHeight - (Math.floor(Math.random() * (canvas.height - gateHeight)));
+            gateHeight = Math.floor(Math.random() * 100) + 50; 
+            playerPosX = canvas.width / 2 - pWidth;
+            playerPosY = canvas.height / 2;           
+        }
+
+        function reset() {
+            resetObstacle();
+            score = 0;
+        }
+        gameLoop();
+
+    </script>
+
+</body>
+</html>
