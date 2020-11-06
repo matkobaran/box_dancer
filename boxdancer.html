@@ -25,14 +25,17 @@
         //canvas
         const canvas = document.querySelector("canvas");
         const ctx = canvas.getContext("2d");
+        
         // variables
         const bgColor = "#f3eac2";
         const fps = 15;
+
         //player variables
         const pColor = "#9ad3bc";
-        const pWidth = 25;
+        const pWidth = 50;
         const pHeight = pWidth;
 
+        const playerSpeed = 5;
         let playerPosX = canvas.width / 2 - pWidth;
         let playerPosY = canvas.height / 2;
         let score = 0;
@@ -56,7 +59,7 @@
                 playerPosY = playerPosY - 50;
             }
             moveActive = 1;
-            playerPosY = playerPosY + 5;           
+            playerPosY = playerPosY + playerSpeed;           
             
         }
 
@@ -74,6 +77,7 @@
             ctx.fillRect(x, y, width, height);
         }
 
+        // input detector
         function keyPush(event) {
             if (event.keyCode == 32) {
                 //alert(event.key);
@@ -95,54 +99,79 @@
         const obstacleColor = "blue";
         let barrierStart = canvas.width;
         const obstWidth = 100;
-        let gateHeight = Math.floor(Math.random() * 100) + 50;
+        let gateHeight = Math.floor(Math.random() * 100) + 100;
         let gateX = canvas.width;
         let gateY = canvas.height - gateHeight - (Math.floor(Math.random() * (canvas.height - gateHeight))); 
+
+        const obstacleSpeed = 10;
+
+
         //draw obstacle
         function drawObstacle() {
             barriers = rectangle(obstacleColor, gateX, 0, obstWidth, canvas.height);
             gate = rectangle(bgColor, gateX, gateY, obstWidth, gateHeight);
-            
-            //console.log(gateHeight);            
-        }
+       }
       
 
-        function moveObstacle() {            
-            //barrierStart -= 5;
-            gateX -= 10;
+        function moveObstacle() {  
+            gateX -= obstacleSpeed;
 
             if (gateX == 0) {
-                resetObstacle();
-                
-            }
-            //console.log(gateX);            
+                resetObstacle();                
+            }                   
+        }
+
+        // print score and reset game
+        function gameOver() {
+            alert("Score: " + score);
+            reset();
         }
 
         function hitObstacle() {
-            if (((playerPosX + pWidth - 20) == gateX) && (playerPosY < gateY || ((playerPosY + pHeight) > (gateY + gateHeight)))) {
-                console.log(playerPosX);
-                console.log(pWidth);
-                console.log(gateX);
-                alert("Score: " + score);
-                reset();
+            // before obstacle hit
+            if (((playerPosX + pWidth - (2 * obstacleSpeed)) == gateX)) {
+                insideHitControl(false);                            
             }
 
-            else if (((playerPosX + pWidth - 20) > gateX && gateX + obstWidth > (playerPosX + pWidth)) && (playerPosY < gateY || ((playerPosY + pHeight) > (gateY + gateHeight)))) {
-                console.log(playerPosX);
-                console.log(pWidth);
-                console.log(gateX);
-                alert("Score: " + score);
-                reset();
+            // inside hit
+            else if ((playerPosX + pWidth - (2 * obstacleSpeed)) > gateX && gateX + obstWidth > (playerPosX + pWidth)) {
+                 insideHitControl(true);
             }
-            else if (playerPosY + pHeight - 10 == canvas.height) {
-                alert("Score: " + score);
-                reset();
+
+            //back of the cube hit
+            else if (playerPosX > gateX && gateX + obstWidth > playerPosX) {
+                 insideHitControl(true);
             }
+
+            // bottom hit
+            else if (playerPosY + pHeight - playerSpeed  == canvas.height) {
+               gameOver();
+            }
+
+            // add score
             else if ((gateX + obstWidth) == (playerPosX + pWidth - 20)) {
                 score++;
             }
         }
 
+        //check if there was hit
+        function insideHitControl(inside) {
+            if (playerPosY < gateY ) {
+                if (inside) {
+                    playerPosY = gateY;    
+                    setTimeout(gameOver, 2*fps);
+                } else {
+                    gameOver();    
+                }
+            } else if ((playerPosY + pHeight) > (gateY + gateHeight)) {
+                if (inside) {
+                    playerPosY = gateY + gateHeight;    
+                }                
+                gameOver();
+            }
+        }
+
+        // creating new obstacle
         function resetObstacle() {
             gateX = canvas.width;
             gateY = canvas.height - gateHeight - (Math.floor(Math.random() * (canvas.height - gateHeight)));
@@ -151,6 +180,7 @@
             playerPosY = canvas.height / 2;           
         }
 
+        //reset game
         function reset() {
             resetObstacle();
             score = 0;
