@@ -12,11 +12,19 @@
         canvas {
             border: 10px solid #ec524b;
         }
+        h1 {
+                margin-top: 0;
+                font-size: 4em;
+                font-family: "Avenir Next", Verdana;
+                font-weight: bold;
+                letter-spacing: -10px;
+            }
 
     </style>
 </head>
 <body>
     <canvas width="800" height="500"></canvas>
+    <h1></h1>
     <script>
         // listeners
         document.addEventListener("keydown", keyPush);
@@ -24,15 +32,15 @@
 
         //canvas
         const canvas = document.querySelector("canvas");
+        const title = document.querySelector("h1");
         const ctx = canvas.getContext("2d");
-        
         // variables
         const bgColor = "#f3eac2";
         const fps = 15;
 
         //player variables
         const pColor = "#9ad3bc";
-        const pWidth = 50;
+        const pWidth = 10;
         const pHeight = pWidth;
 
         const playerSpeed = 5;
@@ -42,9 +50,15 @@
 
         let moveActive = 0;
 
+        let bestScore = localStorage.getItem('topScore');
+        if (bestScore == null) {
+            bestScore = 0;
+        }
+     
+       
         // GAME
         function gameLoop() {
-            
+           
             playerMove(); 
             
             draw();
@@ -62,9 +76,20 @@
             playerPosY = playerPosY + playerSpeed;           
             
         }
+        function changeBestScore() {
+            if (score > bestScore) {
+                newBest = {'topScore': score};
+                bestScore = score;
+                localStorage.setItem('topScore', JSON.stringify(newBest));
+            }
+        }
 
         //draw
         function draw() {
+            bestScore = localStorage.getItem('topScore');
+            console.log(bestScore);
+            //console.log(topScore);
+            title.innerHTML = `your score is ${score} and best is ${((JSON.parse(bestScore)).topScore)}`;
             rectangle(bgColor, 0, 0, canvas.width, canvas.height);
             // obstacle move
             obstacleMove();
@@ -99,7 +124,7 @@
         const obstacleColor = "blue";
         let barrierStart = canvas.width;
         const obstWidth = 100;
-        let gateHeight = Math.floor(Math.random() * 100) + 100;
+        let gateHeight = Math.floor(Math.random() * 500) + 400;
         let gateX = canvas.width;
         let gateY = canvas.height - gateHeight - (Math.floor(Math.random() * (canvas.height - gateHeight))); 
 
@@ -121,11 +146,7 @@
             }                   
         }
 
-        // print score and reset game
-        function gameOver() {
-            alert("Score: " + score);
-            reset();
-        }
+        
 
         function hitObstacle() {
             // before obstacle hit
@@ -135,12 +156,12 @@
 
             // inside hit
             else if ((playerPosX + pWidth - (2 * obstacleSpeed)) > gateX && gateX + obstWidth > (playerPosX + pWidth)) {
-                 insideHitControl(true);
+                insideHitControl(true);
             }
 
             //back of the cube hit
             else if (playerPosX > gateX && gateX + obstWidth > playerPosX) {
-                 insideHitControl(true);
+                insideHitControl(true);
             }
 
             // bottom hit
@@ -149,8 +170,8 @@
             }
 
             // add score
-            else if ((gateX + obstWidth) == (playerPosX + pWidth - 20)) {
-                score++;
+            else if (gateX + obstWidth === playerPosX) {   
+                score += 1;
             }
         }
 
@@ -184,6 +205,15 @@
         function reset() {
             resetObstacle();
             score = 0;
+        }
+
+
+
+        // print score and reset game
+        function gameOver() {
+            alert("Score: " + score);  
+            changeBestScore();          
+            reset();
         }
         gameLoop();
 
